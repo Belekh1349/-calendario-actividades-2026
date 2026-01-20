@@ -1689,31 +1689,41 @@
                 doc.setFillColor(30, 41, 59);
                 doc.rect(0, 0, 210, 50, 'F');
 
-                // Logo Izquierdo (con fondo blanco como en la web)
-                const logoImg = document.querySelector('.brand img');
-                if (logoImg) {
-                    try {
-                        doc.setFillColor(255, 255, 255);
-                        doc.roundedRect(14, 8, 45, 15, 2, 2, 'F');
-                        doc.addImage(logoImg, 'PNG', 16, 10, 41, 11);
-                    } catch (e) {
-                        console.warn("Logo error:", e);
-                    }
-                }
-
-                // Títulos en la esquina derecha
+                // Títulos en la esquina IZQUIERDA
+                const colorGuinda = [139, 26, 45];
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(20);
+                doc.setFontSize(18);
+                doc.setTextColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
+                // Dibujamos un pequeño resalte blanco tras el texto guinda para legibilidad sobre el fondo oscuro
+                // O mejor, ya que el fondo es oscuro, usemos blanco para el título principal pero guinda para el acento
+                // El usuario pidió "Cambia el color negro por un guinda", asumo que se refiere a los títulos y firmas.
+                // Como el fondo del header es azul oscuro (30,41,59), el guinda oscuro no se verá bien.
+                // Ajustaré el diseño para que el guinda resalte (quizás con un fondo más claro en esa parte o texto blanco y detalles guinda).
+                // "Cambia el color negro por un guinda" -> Esto aplica más a la firma y etiquetas fuera del header.
+                // Dentro del header oscuro, mantendré el blanco para legibilidad pero usaré el guinda en el decorador.
+
                 doc.setTextColor(255, 255, 255);
-                doc.text("REPORTE DE ACTIVIDADES", 196, 22, { align: "right" });
+                doc.text("REPORTE DE ACTIVIDADES", 14, 22);
 
                 doc.setFontSize(11);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(200, 200, 200);
-                doc.text("Control Patrimonial", 196, 29, { align: "right" });
+                doc.text("Adquisiciones y Control Patrimonial", 14, 29);
 
-                doc.setFillColor(133, 114, 72); // Color dorado ocre
-                doc.rect(120, 32, 76, 0.5, "F");
+                doc.setFillColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
+                doc.rect(14, 32, 100, 1, "F"); // Línea guinda más gruesa
+
+                // Logo Derecho (con fondo blanco)
+                const logoImg = document.querySelector('.brand img');
+                if (logoImg) {
+                    try {
+                        doc.setFillColor(255, 255, 255);
+                        doc.roundedRect(151, 8, 45, 15, 2, 2, 'F');
+                        doc.addImage(logoImg, 'PNG', 153, 10, 41, 11);
+                    } catch (e) {
+                        console.warn("Logo error:", e);
+                    }
+                }
 
                 doc.setTextColor(255);
                 doc.setFontSize(10);
@@ -1721,11 +1731,11 @@
                 doc.text(`PERSONAL: ${(profile.servidor || 'SIN NOMBRE').toUpperCase()}`, 14, 45);
                 doc.text(`ÁREA: ${(profile.area || 'GENERAL').toUpperCase()}`, 210 - 14, 45, { align: "right" });
 
-                // Etiquetas de vista
+                // Etiquetas de vista (Color Guinda solicitado)
                 const viewLabels = { 'daily': 'DIA', 'weekly': 'SEMANA', 'monthly': 'MES' };
-                doc.setTextColor(148, 163, 184);
+                doc.setTextColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
                 doc.setFontSize(9);
-                doc.setFont("helvetica", "italic");
+                doc.setFont("helvetica", "bold");
                 doc.text(`${viewLabels[viewType]}: ${range}`, 14, 58);
             };
 
@@ -1847,13 +1857,14 @@
                 }
             });
 
-            // Signature - Limpiada según solicitud
+            // Signature - Guinda según solicitud
             const finalY = doc.lastAutoTable.finalY + 30;
             if (finalY < 250) {
-                doc.setDrawColor(150);
+                const colorGuinda = [139, 26, 45];
+                doc.setDrawColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
                 doc.line(60, finalY, 150, finalY);
                 doc.setFontSize(10);
-                doc.setTextColor(0);
+                doc.setTextColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
                 doc.setFont("helvetica", "bold");
                 doc.text("Firma de Conformidad", 105, finalY + 7, { align: "center" });
             }
