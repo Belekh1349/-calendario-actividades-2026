@@ -1689,31 +1689,31 @@
                 doc.setFillColor(30, 41, 59);
                 doc.rect(0, 0, 210, 50, 'F');
 
-                // Logos corners
+                // Logo Izquierdo (con fondo blanco como en la web)
                 const logoImg = document.querySelector('.brand img');
                 if (logoImg) {
                     try {
-                        // Logo Izquierdo
-                        doc.addImage(logoImg, 'PNG', 14, 8, 30, 10);
-                        // Logo Derecho (espejo o complementario si lo deseas, por ahora el mismo para coherencia)
-                        doc.addImage(logoImg, 'PNG', 166, 8, 30, 10);
+                        doc.setFillColor(255, 255, 255);
+                        doc.roundedRect(14, 8, 45, 15, 2, 2, 'F');
+                        doc.addImage(logoImg, 'PNG', 16, 10, 41, 11);
                     } catch (e) {
-                        console.warn("Logo no cargado en PDF:", e);
+                        console.warn("Logo error:", e);
                     }
                 }
 
+                // Títulos en la esquina derecha
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(22);
+                doc.setFontSize(20);
                 doc.setTextColor(255, 255, 255);
-                doc.text("REPORTE DE ACTIVIDADES", 105, 28, { align: "center" });
+                doc.text("REPORTE DE ACTIVIDADES", 196, 22, { align: "right" });
 
-                doc.setFontSize(9);
+                doc.setFontSize(11);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(200, 200, 200);
-                doc.text(`SISTEMA DE GESTIÓN ADMINISTRATIVA 2026`, 105, 34, { align: "center" });
+                doc.text("Control Patrimonial", 196, 29, { align: "right" });
 
                 doc.setFillColor(133, 114, 72); // Color dorado ocre
-                doc.rect(40, 36, 130, 0.5, "F");
+                doc.rect(120, 32, 76, 0.5, "F");
 
                 doc.setTextColor(255);
                 doc.setFontSize(10);
@@ -1721,9 +1721,9 @@
                 doc.text(`PERSONAL: ${(profile.servidor || 'SIN NOMBRE').toUpperCase()}`, 14, 45);
                 doc.text(`ÁREA: ${(profile.area || 'GENERAL').toUpperCase()}`, 210 - 14, 45, { align: "right" });
 
-                // Etiquetas de vista bonitas
+                // Etiquetas de vista
                 const viewLabels = { 'daily': 'DIA', 'weekly': 'SEMANA', 'monthly': 'MES' };
-                doc.setTextColor(203, 213, 225);
+                doc.setTextColor(148, 163, 184);
                 doc.setFontSize(9);
                 doc.setFont("helvetica", "italic");
                 doc.text(`${viewLabels[viewType]}: ${range}`, 14, 58);
