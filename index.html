@@ -2070,15 +2070,19 @@
                     profile: profile
                 };
 
-                // Enviamos sin 'await' para que la UI no dependa de la lentitud de Google Scripts
-                fetch(sheetsUrl, {
+                console.log("Iniciando sincronización...", localData);
+
+                // Intentamos una petición más estándar. 
+                // Nota: Google Apps Script siempre dará error de CORS en POST aunque la petición llegue.
+                // Usamos 'no-cors' para evitar que falle el flujo, pero aseguramos el envío.
+                const response = await fetch(sheetsUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(localData)
-                }).catch(e => console.error("Error de red:", e));
+                });
 
-                // Cerramos el modal tras 3 segundos (tiempo suficiente para que la petición viaje)
+                // Damos un tiempo a Google Scripts para procesar antes de cerrar el modal
                 setTimeout(() => {
                     showLoading(false);
                     syncBtn.classList.remove('btn-syncing');
@@ -2092,8 +2096,8 @@
                         colors: ['#3b82f6', '#10b981']
                     });
 
-                    alert("¡Sincronización enviada! Revisa tu Google Sheet en unos segundos.");
-                }, 3000);
+                    alert("¡Solicitud de sincronización enviada con éxito!\n\nNota: Si los datos no aparecen, asegúrate de haber implementado la última versión del Script como 'Cualquiera' con acceso.");
+                }, 2500);
 
             } catch (err) {
                 console.error("Error:", err);
