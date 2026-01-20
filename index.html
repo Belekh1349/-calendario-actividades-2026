@@ -745,6 +745,24 @@
             text-align: center;
         }
 
+        /* PDF Preview Modal extra styles */
+        #pdfModal .modal-content {
+            max-width: 900px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #pdfModal iframe {
+            flex: 1;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 15px 0;
+            background: #fff;
+        }
+
         .modal-icon {
             font-size: 3rem;
             color: var(--primary);
@@ -1151,6 +1169,25 @@
             <div class="modal-icon"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
             <h2 id="loadingText">Procesando...</h2>
             <p style="color: var(--text-dim); margin-top: 12px;">La IA está redactando tus actividades.</p>
+        </div>
+    </div>
+    <div class="modal" id="pdfModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 id="pdfTitle">Vista Previa del Reporte</h2>
+                <button class="btn btn-outline" style="padding: 8px;" onclick="closePdfModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <iframe id="pdfFrame"></iframe>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btnDownloadConfirm" style="flex: 1;">
+                    <i class="fa-solid fa-download"></i> Descargar Documento
+                </button>
+                <button class="btn btn-outline" style="flex: 1;" onclick="closePdfModal()">
+                    <i class="fa-solid fa-circle-xmark"></i> Cancelar
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1647,38 +1684,49 @@
             // Header Helper
             const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAAHLklEQVRogd2Ze2xT5x3Hn8/x9TnxEyd2YicXEjAJIUBCAy0l5VHotpYuK6t0a1el3aZt0qrdgHba/jFp06ZJ+8O0atO0ax/t2q5bC+1o166jgJYWKA+FhEAS48Qv7NiJ7fN4fH77wzHExI5tDKX9JM9/j5/z+31/z/f5Pe/zOQo+5KEM/7+A6aKr6+jF4+3t/b1dXV1+oAMIAgIgA4PAEHC8p6fnxK1+7pYF6O4+siYQ6H7T5/O/3tTU5K+qqkIIgRACIQSUUiSTSRKJxLWhoaF/DA0N/bm3t/fHsVjshVv5/C0J0N195Gqg+62GhoY/rFy50r1s2TIcDocNREqJYRjIsoxhGIyOji48f/78O52dnS/FYrEXbyWMWxCgu/vIWqD77UAg8JbX662w2WwIIZBlGcd0KKWw2+243W5qamo8lZWV/pUrV/p7e3vf7OzsfP5mI7glAXp7e3/X1NT0t6qqKrfD4cAwDCRJwjRNFEVB0zQkSbI9L4RAURSys7MZHh5mYmKCmpoab01NzfKamprlnZ2dz99sBLckwM9+9rNfNDQ0/M7v9y9TVRXDMJBlGVVVkWWZTCaDoijIskw6nbbtgRACm81GNBplbGxstq2tra25vb393ZsJ4ZYEeP7553/V1NT0e1VVlctutyOEQJIkVFXFNE0Mw0BRFCRJwjAMFEWxPS+EQJIk0uk0o6Oji9ra2vy1tbUru7q6/ngzIdySAD/72c9+0dDQ8Du/379MVVUMw0CWZVRVRZZlMpkMiqIgyzLpdNq2B0IIbDYZwzAQQsBut9Pc3Fy1atWqP/T09Py6r6/v1Fw/d0sC9Pb2/q6pqelvVVVVboej0APTNFEUBcMwUBQFwsC8M8M0LRVFwzTAMFEVBkowkSshkSshmMsiyjCzLpNNp294LIdB1HaXUuREURUEp9Y4f/3Z8VvP/AHG9YwYJsk7kAAAAAElFTkSuQmCC";
 
-            const drawHeader = (title, range) => {
+            const drawHeader = (viewType, range) => {
                 // Background Header
                 doc.setFillColor(30, 41, 59);
                 doc.rect(0, 0, 210, 50, 'F');
 
-                // Logo
-                try {
-                    doc.addImage(logoBase64, 'PNG', 170, 10, 25, 25);
-                } catch (e) { console.error("Logo error", e); }
+                // Logos corners
+                const logoImg = document.querySelector('.brand img');
+                if (logoImg) {
+                    try {
+                        // Logo Izquierdo
+                        doc.addImage(logoImg, 'PNG', 14, 8, 30, 10);
+                        // Logo Derecho (espejo o complementario si lo deseas, por ahora el mismo para coherencia)
+                        doc.addImage(logoImg, 'PNG', 166, 8, 30, 10);
+                    } catch (e) {
+                        console.warn("Logo no cargado en PDF:", e);
+                    }
+                }
 
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(20);
+                doc.setFontSize(22);
                 doc.setTextColor(255, 255, 255);
-                doc.text("REPORTE DE ACTIVIDADES", 14, 22);
+                doc.text("REPORTE DE ACTIVIDADES", 105, 28, { align: "center" });
 
-                doc.setFontSize(10);
+                doc.setFontSize(9);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(200, 200, 200);
-                doc.text(`SISTEMA DE GESTIÓN ADMINISTRATIVA 2026`, 14, 29);
+                doc.text(`SISTEMA DE GESTIÓN ADMINISTRATIVA 2026`, 105, 34, { align: "center" });
 
-                doc.setFillColor(16, 185, 129);
-                doc.rect(14, 35, 140, 0.5, "F");
+                doc.setFillColor(133, 114, 72); // Color dorado ocre
+                doc.rect(40, 36, 130, 0.5, "F");
 
                 doc.setTextColor(255);
                 doc.setFontSize(10);
                 doc.setFont("helvetica", "bold");
-                doc.text(`PERSONAL: ${(profile.servidor || 'SIN NOMBRE').toUpperCase()}`, 14, 42);
-                doc.text(`ÁREA: ${(profile.area || 'GENERAL').toUpperCase()}`, 14, 47);
+                doc.text(`PERSONAL: ${(profile.servidor || 'SIN NOMBRE').toUpperCase()}`, 14, 45);
+                doc.text(`ÁREA: ${(profile.area || 'GENERAL').toUpperCase()}`, 210 - 14, 45, { align: "right" });
 
-                doc.setTextColor(100, 116, 139);
+                // Etiquetas de vista bonitas
+                const viewLabels = { 'daily': 'DIA', 'weekly': 'SEMANA', 'monthly': 'MES' };
+                doc.setTextColor(203, 213, 225);
                 doc.setFontSize(9);
-                doc.text(`Vista: ${title.toUpperCase()} | Periodo: ${range}`, 14, 58);
+                doc.setFont("helvetica", "italic");
+                doc.text(`${viewLabels[viewType]}: ${range}`, 14, 58);
             };
 
             // Filter data based on view and custom selection
@@ -1799,19 +1847,36 @@
                 }
             });
 
-            // Signature
+            // Signature - Limpiada según solicitud
             const finalY = doc.lastAutoTable.finalY + 30;
             if (finalY < 250) {
                 doc.setDrawColor(150);
                 doc.line(60, finalY, 150, finalY);
                 doc.setFontSize(10);
-                doc.setTextColor(colorSecondary[0]);
-                doc.text(profile.servidor || "Firma del Servidor", 105, finalY + 7, { align: "center" });
-                doc.setFont("helvetica", "normal");
-                doc.text("Firma de Conformidad", 105, finalY + 12, { align: "center" });
+                doc.setTextColor(0);
+                doc.setFont("helvetica", "bold");
+                doc.text("Firma de Conformidad", 105, finalY + 7, { align: "center" });
             }
 
-            doc.save(`Reporte_Actividades_${view}_${new Date().getTime()}.pdf`);
+            // Vista Previa en lugar de Descarga directa
+            const pdfDataUri = doc.output('datauristring');
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+
+            document.getElementById('pdfFrame').src = pdfUrl;
+            const filename = `Reporte_${view}_${new Date().getTime()}.pdf`;
+
+            document.getElementById('btnDownloadConfirm').onclick = () => {
+                doc.save(filename);
+                closePdfModal();
+            };
+
+            document.getElementById('pdfModal').classList.add('active');
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfModal').classList.remove('active');
+            document.getElementById('pdfFrame').src = '';
         }
 
         // Utils
