@@ -28,17 +28,26 @@ function doGet(e) {
 }
 
 function doPost(e) {
-    var content = JSON.parse(e.postData.contents);
+    var content;
+    try {
+        content = JSON.parse(e.postData.contents);
+    } catch (err) {
+        // Fallback for different content types
+        content = e.parameter;
+    }
+
     var sheet = getDatabaseSheet();
 
-    if (content.action === 'SYNC_ALL') {
+    if (content && content.action === 'SYNC_ALL') {
         sheet.clear();
         sheet.appendRow(['TYPE', 'KEY', 'VALUE', 'TIMESTAMP']);
 
         // Guardar Perfil
         if (content.profile) {
             for (var k in content.profile) {
-                sheet.appendRow(['PROFILE', k, content.profile[k], new Date()]);
+                if (k !== 'sheetsUrl') { // Don't store the URL itself
+                    sheet.appendRow(['PROFILE', k, content.profile[k], new Date()]);
+                }
             }
         }
 
@@ -49,7 +58,7 @@ function doPost(e) {
             }
         }
 
-        return ContentService.createTextOutput(JSON.stringify({ status: 'ok', message: 'Sincronización completa' }))
+        return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
             .setMimeType(ContentService.MimeType.JSON);
     }
 }
