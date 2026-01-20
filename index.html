@@ -1749,43 +1749,43 @@
             const profile = getProfile();
             const sheetsUrl = profile.sheetsUrl;
 
-            if (!sheetsUrl) {
-                alert("Por favor, configura la URL de Google Sheets en el panel de configuración.");
+            if (!sheetsUrl || !sheetsUrl.includes('/exec')) {
+                alert("Por favor, configura una URL válida de Google Sheets (debe terminar en /exec).");
                 return;
             }
 
             const syncBtn = document.getElementById('syncBtn');
             syncBtn.classList.add('btn-syncing');
             syncBtn.disabled = true;
-            showLoading(true, "Sincronizando con la nube...");
+
+            // Actualizar subtexto del modal
+            const loadingSubtext = document.querySelector('#loadingModal p');
+            const originalSubtext = loadingSubtext ? loadingSubtext.textContent : "";
+            if (loadingSubtext) loadingSubtext.textContent = "Sincronizando registros con tu hoja de cálculo...";
+
+            showLoading(true, "Conectando...");
 
             try {
-                // Primero: Obtener datos actuales de la nube (Backup/Merge)
-                const response = await fetch(sheetsUrl);
-                const cloudData = await response.json();
-
-                // Merge: Los datos de la nube tienen prioridad si hay conflictos de fecha?
-                // O mejor: Sincronización simple - Reemplazar nube con local (Sync All)
-                // Usaremos Sync All para mantener integridad.
-
                 const localData = {
                     action: 'SYNC_ALL',
                     records: getRecords(),
                     profile: profile
                 };
 
-                const pushResponse = await fetch(sheetsUrl, {
+                // Enviamos sin 'await' para que la UI no dependa de la lentitud de Google Scripts
+                fetch(sheetsUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // Apps Script requiere no-cors o redirección compleja
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(localData)
-                });
+                }).catch(e => console.error("Error de red:", e));
 
-                // Como usamos no-cors no podemos ver la respuesta, pero si no falla el fetch, asumimos éxito
+                // Cerramos el modal tras 3 segundos (tiempo suficiente para que la petición viaje)
                 setTimeout(() => {
                     showLoading(false);
                     syncBtn.classList.remove('btn-syncing');
                     syncBtn.disabled = false;
+                    if (loadingSubtext) loadingSubtext.textContent = originalSubtext;
 
                     confetti({
                         particleCount: 150,
@@ -1794,15 +1794,16 @@
                         colors: ['#3b82f6', '#10b981']
                     });
 
-                    alert("Sincronización enviada con éxito a Google Sheets.");
-                }, 1500);
+                    alert("¡Sincronización enviada! Revisa tu Google Sheet en unos segundos.");
+                }, 3000);
 
             } catch (err) {
-                console.error(err);
-                alert("Error durante la sincronización. Verifica la URL y los permisos.");
+                console.error("Error:", err);
+                alert("Error de conexión inmediata.");
                 showLoading(false);
                 syncBtn.classList.remove('btn-syncing');
                 syncBtn.disabled = false;
+                if (loadingSubtext) loadingSubtext.textContent = originalSubtext;
             }
         }
 
