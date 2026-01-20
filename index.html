@@ -79,79 +79,69 @@
             --highlight: rgba(139, 26, 45, 0.1);
         }
 
-        /* Floating Theme Menu */
-        .theme-fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
+        /* Theme Top Menu */
+        .theme-top-menu {
             display: flex;
-            flex-direction: column-reverse;
-            align-items: center;
-            gap: 12px;
+            gap: 8px;
+            background: var(--glass);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
-        .fab-main {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: var(--transition);
+        .theme-top-menu button {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             border: none;
-            font-size: 1.5rem;
-        }
-
-        .fab-main:hover {
-            transform: scale(1.1) rotate(15deg);
-        }
-
-        .theme-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(20px);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
             transition: var(--transition);
-        }
-
-        .theme-fab.active .theme-options {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .option-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 2px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-main);
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
+            font-size: 1rem;
         }
 
-        .option-btn:hover {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
+        .theme-top-menu button:hover {
+            background: var(--glass);
+            color: var(--text-main);
         }
 
-        .option-btn.active {
+        .theme-top-menu button.active {
             background: var(--primary);
             color: white;
-            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(139, 26, 45, 0.3);
+        }
+
+        /* Stats Filters */
+        .stats-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-card);
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .stats-filter input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 5px 10px;
+            border-radius: 6px;
+            outline: none;
         }
 
         /* Admin Mode Restrictions */
@@ -1015,11 +1005,24 @@
         <main class="animate-fade">
             <header>
                 <div class="header-info" style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2px;">
                         <img src="header_logo.png" alt="Logo"
-                            style="height: 60px; background: white; padding: 5px; border-radius: 8px;">
-                        <h1>Actividades Diarias 2026</h1>
+                            style="height: 50px; background: white; padding: 5px; border-radius: 8px;">
+                        <h1 style="font-size: 1.8rem;">Actividades Diarias 2026</h1>
                     </div>
+                    <p id="currentDateDisplay" style="font-size: 0.9rem; opacity: 0.8;"></p>
+                </div>
+                <!-- Theme Menu at Top -->
+                <div class="theme-top-menu">
+                    <button id="btn-dark-top" onclick="applyTheme('dark')" title="Modo Oscuro">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button id="btn-sepia-top" onclick="applyTheme('sepia')" title="Modo Sepia">
+                        <i class="fa-solid fa-leaf"></i>
+                    </button>
+                    <button id="btn-light-top" onclick="applyTheme('light')" title="Modo Claro">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
                 </div>
             </header>
 
@@ -1207,15 +1210,36 @@
 
             <!-- Statistics Section -->
             <div id="stats-section" class="app-section" style="display: none;">
+                <div class="stats-toolbar">
+                    <div class="stats-filter">
+                        <label style="font-size: 0.8rem; font-weight: bold;"><i class="fa-solid fa-calendar-week"></i>
+                            Semana:</label>
+                        <input type="week" id="statsWeekFilter" onchange="updateCharts()">
+                        <button class="btn btn-outline" style="padding: 5px 12px; font-size: 0.8rem;"
+                            onclick="downloadChartPDF('weekly')">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                    <div class="stats-filter">
+                        <label style="font-size: 0.8rem; font-weight: bold;"><i class="fa-solid fa-calendar-days"></i>
+                            Mes:</label>
+                        <input type="month" id="statsMonthFilter" onchange="updateCharts()">
+                        <button class="btn btn-outline" style="padding: 5px 12px; font-size: 0.8rem;"
+                            onclick="downloadChartPDF('monthly')">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+
                 <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
                     <section class="activity-card">
                         <div class="card-header">
                             <div class="card-title">
                                 <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i>
-                                <span>Desempeño Semanal</span>
+                                <span id="weeklyChartTitle">Desempeño Semanal</span>
                             </div>
                         </div>
-                        <div style="height: 300px;">
+                        <div style="height: 300px; position: relative;">
                             <canvas id="weeklyChart"></canvas>
                         </div>
                     </section>
@@ -1224,10 +1248,10 @@
                         <div class="card-header">
                             <div class="card-title">
                                 <i class="fa-solid fa-chart-bar" style="color: var(--secondary);"></i>
-                                <span>Avance Mensual</span>
+                                <span id="monthlyChartTitle">Avance Mensual</span>
                             </div>
                         </div>
-                        <div style="height: 300px;">
+                        <div style="height: 300px; position: relative;">
                             <canvas id="monthlyChart"></canvas>
                         </div>
                     </section>
@@ -1425,6 +1449,16 @@
                 cell.onclick = () => selectDay(dateStr);
                 daysGrid.appendChild(cell);
             }
+        }
+
+        // Global Helper: Get Monday of a specific ISO week
+        function getMondayOfISOWeek(w, y) {
+            const simple = new Date(y, 0, 1 + (w - 1) * 7);
+            const dow = simple.getUTCDay(); // Using UTC for consistency in week selection
+            const ISOweekStart = simple;
+            if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+            else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+            return ISOweekStart;
         }
 
         function changeMonth(dir) {
@@ -1927,14 +1961,6 @@
                 rangeText = `${monthNames[targetMonth]} ${targetYear}`;
             }
 
-            function getMondayOfISOWeek(w, y) {
-                const simple = new Date(y, 0, 1 + (w - 1) * 7);
-                const dow = simple.getDay();
-                const ISOweekStart = simple;
-                if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-                else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-                return ISOweekStart;
-            }
 
             if (dataRows.length === 0) {
                 alert("No se encontraron actividades en el rango seleccionado.");
@@ -2132,25 +2158,25 @@
             const body = document.body;
             body.classList.remove('light-mode', 'sepia-mode');
 
-            // Remove active status from all buttons
-            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            // Update Top Menu buttons
+            document.querySelectorAll('.theme-top-menu button').forEach(btn => btn.classList.remove('active'));
+
+            const mapping = { 'dark': 'btn-dark-top', 'sepia': 'btn-sepia-top', 'light': 'btn-light-top' };
+            const activeBtn = document.getElementById(mapping[theme]);
+            if (activeBtn) activeBtn.classList.add('active');
 
             if (theme === 'light') {
                 body.classList.add('light-mode');
-                const btn = document.getElementById('btn-light');
-                if (btn) btn.classList.add('active');
             } else if (theme === 'sepia') {
                 body.classList.add('sepia-mode');
-                const btn = document.getElementById('btn-sepia');
-                if (btn) btn.classList.add('active');
-            } else {
-                const btn = document.getElementById('btn-dark');
-                if (btn) btn.classList.add('active');
             }
 
             localStorage.setItem('theme_preference', theme);
-            const fab = document.getElementById('themeFab');
-            if (fab) fab.classList.remove('active');
+
+            // If charts are visible, update them to reflect new theme colors
+            if (document.getElementById('stats-section').style.display !== 'none') {
+                updateCharts();
+            }
         }
 
         // Cargar tema al inicio
@@ -2272,65 +2298,91 @@
 
         function updateCharts() {
             if (!weeklyChart || !monthlyChart) return;
-            if (!document.getElementById('weeklyChart')) return;
 
             const records = getRecords();
-            const now = new Date();
+            const weekVal = document.getElementById('statsWeekFilter').value;
+            const monthVal = document.getElementById('statsMonthFilter').value;
 
-            // Weekly Data (Current week or selected date's week)
-            const targetDate = selectedDate ? parseLocalDate(selectedDate) : new Date();
-            const dayOfWeek = targetDate.getDay();
-            const diffToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
-            const monday = new Date(targetDate);
-            monday.setDate(targetDate.getDate() + diffToMonday);
+            // Colors based on theme
+            const isDark = !document.body.classList.contains('light-mode') && !document.body.classList.contains('sepia-mode');
+            const textColor = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            [weeklyChart, monthlyChart].forEach(chart => {
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.x.ticks.color = textColor;
+                chart.options.scales.y.grid.color = gridColor;
+            });
+
+            // Weekly logic with filter
+            let monday;
+            if (weekVal) {
+                const [y, w] = weekVal.split('-W');
+                monday = getMondayOfISOWeek(parseInt(w), parseInt(y));
+            } else {
+                const targetDate = selectedDate ? parseLocalDate(selectedDate) : new Date();
+                const dayOfWeek = targetDate.getDay();
+                const diffToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+                monday = new Date(targetDate);
+                monday.setDate(targetDate.getDate() + diffToMonday);
+            }
 
             const weeklyData = [0, 0, 0, 0, 0];
-
             for (let i = 0; i < 5; i++) {
                 const d = new Date(monday);
                 d.setDate(monday.getDate() + i);
                 const ds = formatDate(d);
                 if (records[ds]) {
                     const raw = records[ds];
-                    if (Array.isArray(raw)) {
-                        weeklyData[i] = raw.length;
-                    } else {
-                        const content = typeof raw === 'string' ? raw : (raw.text || '');
-                        weeklyData[i] = content.split('\n').filter(line => line.trim()).length;
-                    }
+                    weeklyData[i] = Array.isArray(raw) ? raw.length : (typeof raw === 'string' ? raw.split('\n').length : 1);
                 }
             }
+
+            const friday = new Date(monday);
+            friday.setDate(monday.getDate() + 4);
+            document.getElementById('weeklyChartTitle').textContent = `Semana: ${formatDate(monday)} al ${formatDate(friday)}`;
 
             weeklyChart.data.datasets[0].data = weeklyData;
             weeklyChart.update();
 
-            // Monthly Data (Weeks of current month)
-            const firstOfMonth = new Date(currentYear, currentMonth, 1);
+            // Monthly logic with filter
+            let targetYear, targetMonth;
+            if (monthVal) {
+                const [y, m] = monthVal.split('-');
+                targetYear = parseInt(y);
+                targetMonth = parseInt(m) - 1;
+            } else {
+                targetYear = currentYear;
+                targetMonth = currentMonth;
+            }
+
+            const firstOfMonth = new Date(targetYear, targetMonth, 1);
             const monthlyData = [0, 0, 0, 0, 0];
+            const monthPrefix = `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}`;
 
             Object.entries(records).forEach(([date, rec]) => {
                 const d = new Date(date);
-                if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+                if (date.startsWith(monthPrefix)) {
                     const weekNum = Math.floor((d.getDate() - 1 + firstOfMonth.getDay()) / 7);
                     if (weekNum < 5) {
-                        if (Array.isArray(rec)) {
-                            monthlyData[weekNum] += rec.length;
-                        } else {
-                            const content = typeof rec === 'string' ? rec : (rec.text || '');
-                            monthlyData[weekNum] += content.split('\n').filter(l => l.trim()).length;
-                        }
+                        monthlyData[weekNum] += Array.isArray(rec) ? rec.length : 1;
                     }
                 }
             });
 
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById('monthlyChartTitle').textContent = `Avance: ${monthNames[targetMonth]} ${targetYear}`;
+
             monthlyChart.data.datasets[0].data = monthlyData;
             monthlyChart.update();
 
-            // Summary Stats
-            const totalThisMonth = Object.keys(records).filter(d => d.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)).length;
-            const avgActivities = totalThisMonth > 0 ? (monthlyData.reduce((a, b) => a + b, 0) / totalThisMonth).toFixed(1) : 0;
+            // Summary Stats update
+            const totalThisMonth = Object.keys(records).filter(d => d.startsWith(monthPrefix)).length;
+            const totalActivities = monthlyData.reduce((a, b) => a + b, 0);
+            const avgActivities = totalThisMonth > 0 ? (totalActivities / totalThisMonth).toFixed(1) : 0;
 
-            const summaryHTML = `
+            document.getElementById('statsSummary').innerHTML = `
                 <div class="stat-card">
                     <div class="stat-info">
                         <h4>Días este Mes</h4>
@@ -2339,18 +2391,76 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Promedio Act/Día</h4>
-                        <div class="value">${avgActivities}</div>
+                        <h4>Total Actividades</h4>
+                        <div class="value">${totalActivities}</div>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Cumplimiento</h4>
-                        <div class="value">${Math.min(100, (totalThisMonth / 20) * 100).toFixed(0)}%</div>
+                        <h4>Promedio</h4>
+                        <div class="value">${avgActivities}</div>
                     </div>
                 </div>
             `;
-            document.getElementById('statsSummary').innerHTML = summaryHTML;
+        }
+
+        async function downloadChartPDF(type) {
+            const canvas = document.getElementById(type === 'weekly' ? 'weeklyChart' : 'monthlyChart');
+            const title = document.getElementById(type === 'weekly' ? 'weeklyChartTitle' : 'monthlyChartTitle').textContent;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('l', 'mm', 'a4');
+            const colorGuinda = [139, 26, 45];
+
+            // Header Guinda Estilo Institucional
+            pdf.setFillColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
+            pdf.rect(0, 0, 297, 30, 'F');
+
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(18);
+            pdf.setFont("helvetica", "bold");
+            pdf.text("ESTADÍSTICAS DE DESEMPEÑO", 15, 18);
+
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "normal");
+            pdf.text("Control Patrimonial", 15, 25);
+
+            pdf.setFontSize(14);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(title.toUpperCase(), 282, 20, { align: "right" });
+
+            // Background White for Chart area
+            pdf.setFillColor(248, 250, 252); // Muted slate bg
+            pdf.roundedRect(10, 35, 277, 155, 3, 3, 'F');
+
+            // Add logo to PDF if exists
+            const logoImg = document.querySelector('.brand img');
+            if (logoImg) {
+                try {
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.roundedRect(240, 5, 42, 12, 2, 2, 'F');
+                    pdf.addImage(logoImg, 'PNG', 242, 6, 38, 10);
+                } catch (e) { console.error("Logo error", e); }
+            }
+
+            const chartImg = canvas.toDataURL('image/png', 1.0);
+            pdf.addImage(chartImg, 'PNG', 15, 45, 267, 135);
+
+            // Footer
+            const profile = getProfile();
+            pdf.setFontSize(9);
+            pdf.setTextColor(148, 163, 184); // slate-400
+            pdf.text(`Servidor Público: ${profile.servidor || 'S/N'} | Área: ${profile.area || 'S/A'}`, 15, 202);
+            pdf.text(`Generado: ${new Date().toLocaleString()}`, 282, 202, { align: "right" });
+
+            // Signature line
+            pdf.setDrawColor(203, 213, 225);
+            pdf.line(110, 195, 187, 195);
+            pdf.setTextColor(30, 41, 59);
+            pdf.setFontSize(8);
+            pdf.text("FIRMA DE REVISIÓN", 148.5, 199, { align: "center" });
+
+            pdf.save(`${type}_stats_${formatDate(new Date())}.pdf`);
         }
 
         function updateHistory() {
@@ -2404,23 +2514,5 @@
             }
         }
     </script>
-    <!-- Theme Floating Menu -->
-    <div class="theme-fab" id="themeFab">
-        <div class="theme-options">
-            <button class="option-btn" onclick="applyTheme('dark')" title="Modo Oscuro" id="btn-dark">
-                <i class="fa-solid fa-moon"></i>
-            </button>
-            <button class="option-btn" onclick="applyTheme('sepia')" title="Modo Sepia" id="btn-sepia">
-                <i class="fa-solid fa-leaf"></i>
-            </button>
-            <button class="option-btn" onclick="applyTheme('light')" title="Modo Claro" id="btn-light">
-                <i class="fa-solid fa-sun"></i>
-            </button>
-        </div>
-        <button class="fab-main" onclick="document.getElementById('themeFab').classList.toggle('active')">
-            <i class="fa-solid fa-palette"></i>
-        </button>
-    </div>
-</body>
 
 </html>
