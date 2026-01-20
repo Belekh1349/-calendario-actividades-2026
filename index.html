@@ -1212,19 +1212,17 @@
             <div id="stats-section" class="app-section" style="display: none;">
                 <div class="stats-toolbar">
                     <div class="stats-filter">
-                        <label style="font-size: 0.8rem; font-weight: bold;"><i class="fa-solid fa-calendar-week"></i>
-                            Semana:</label>
-                        <input type="week" id="statsWeekFilter" onchange="updateCharts()">
-                        <button class="btn btn-outline" style="padding: 5px 12px; font-size: 0.8rem;"
+                        <label><i class="fa-solid fa-calendar-week"></i> Semana:</label>
+                        <input type="week" id="statsWeekFilter" onchange="updateCharts()" title="Seleccionar semana">
+                        <button class="btn btn-outline" style="padding: 6px 14px; font-size: 0.8rem;"
                             onclick="downloadChartPDF('weekly')">
                             <i class="fa-solid fa-file-pdf"></i> PDF
                         </button>
                     </div>
                     <div class="stats-filter">
-                        <label style="font-size: 0.8rem; font-weight: bold;"><i class="fa-solid fa-calendar-days"></i>
-                            Mes:</label>
-                        <input type="month" id="statsMonthFilter" onchange="updateCharts()">
-                        <button class="btn btn-outline" style="padding: 5px 12px; font-size: 0.8rem;"
+                        <label><i class="fa-solid fa-calendar-days"></i> Mes:</label>
+                        <input type="month" id="statsMonthFilter" onchange="updateCharts()" title="Seleccionar mes">
+                        <button class="btn btn-outline" style="padding: 6px 14px; font-size: 0.8rem;"
                             onclick="downloadChartPDF('monthly')">
                             <i class="fa-solid fa-file-pdf"></i> PDF
                         </button>
@@ -1258,10 +1256,18 @@
                 </div>
 
                 <div class="activity-card" style="margin-top: 32px;">
-                    <div class="card-header">
+                    <div class="card-header"
+                        style="justify-content: space-between; display: flex; align-items: center;">
                         <div class="card-title">
                             <i class="fa-solid fa-list-check" style="color: var(--accent);"></i>
                             <span>Resumen de Cumplimiento</span>
+                        </div>
+                        <div class="stats-filter"
+                            style="margin: 0; background: var(--bg-dark); border: 1px solid var(--border); padding: 4px 8px; border-radius: 10px;">
+                            <label style="font-size: 0.7rem; color: var(--text-dim);"><i class="fa-solid fa-filter"></i>
+                                Consultar Mes:</label>
+                            <input type="month" id="summaryMonthFilter" onchange="updateCharts()"
+                                style="background: transparent; border: none; color: var(--text-main); font-size: 0.8rem; cursor: pointer;">
                         </div>
                     </div>
                     <div id="statsSummary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
@@ -2302,6 +2308,7 @@
             const records = getRecords();
             const weekVal = document.getElementById('statsWeekFilter').value;
             const monthVal = document.getElementById('statsMonthFilter').value;
+            const summaryMonthVal = document.getElementById('summaryMonthFilter').value;
 
             // Colors based on theme
             const isDark = !document.body.classList.contains('light-mode') && !document.body.classList.contains('sepia-mode');
@@ -2377,28 +2384,51 @@
             monthlyChart.data.datasets[0].data = monthlyData;
             monthlyChart.update();
 
-            // Summary Stats update
-            const totalThisMonth = Object.keys(records).filter(d => d.startsWith(monthPrefix)).length;
-            const totalActivities = monthlyData.reduce((a, b) => a + b, 0);
-            const avgActivities = totalThisMonth > 0 ? (totalActivities / totalThisMonth).toFixed(1) : 0;
+            // Summary Stats update (Independent Filter)
+            let sYear, sMonth;
+            if (summaryMonthVal) {
+                const [y, m] = summaryMonthVal.split('-');
+                sYear = parseInt(y);
+                sMonth = parseInt(m) - 1;
+            } else {
+                sYear = currentYear;
+                sMonth = currentMonth;
+                // Sync the input value if empty
+                document.getElementById('summaryMonthFilter').value = `${sYear}-${String(sMonth + 1).padStart(2, '0')}`;
+            }
+
+            const sPrefix = `${sYear}-${String(sMonth + 1).padStart(2, '0')}`;
+            const summaryRecords = Object.keys(records).filter(d => d.startsWith(sPrefix));
+            const totalThisMonth = summaryRecords.length;
+
+            let totalActivitiesMonth = 0;
+            summaryRecords.forEach(date => {
+                const rec = records[date];
+                totalActivitiesMonth += Array.isArray(rec) ? rec.length : 1;
+            });
+
+            const avgActivities = totalThisMonth > 0 ? (totalActivitiesMonth / totalThisMonth).toFixed(1) : 0;
 
             document.getElementById('statsSummary').innerHTML = `
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Días este Mes</h4>
+                        <h4>Días Registrados</h4>
                         <div class="value">${totalThisMonth}</div>
+                        <p style="font-size: 0.6rem; color: var(--text-dim);">${monthNames[sMonth]} ${sYear}</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
                         <h4>Total Actividades</h4>
-                        <div class="value">${totalActivities}</div>
+                        <div class="value">${totalActivitiesMonth}</div>
+                        <p style="font-size: 0.6rem; color: var(--text-dim);">${monthNames[sMonth]} ${sYear}</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-info">
-                        <h4>Promedio</h4>
+                        <h4>Promedio Diario</h4>
                         <div class="value">${avgActivities}</div>
+                        <p style="font-size: 0.6rem; color: var(--text-dim);">${monthNames[sMonth]} ${sYear}</p>
                     </div>
                 </div>
             `;
@@ -2416,49 +2446,49 @@
             pdf.setFillColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
             pdf.rect(0, 0, 297, 30, 'F');
 
+            // Logo institutional (sin fondo blanco, posicionado a la izquierda)
+            const logoImg = document.querySelector('.brand img');
+            if (logoImg) {
+                try {
+                    // El logo se coloca en la esquina izquierda con un tamaño prudente
+                    pdf.addImage(logoImg, 'PNG', 12, 6, 42, 11);
+                } catch (e) { console.error("Logo error", e); }
+            }
+
             pdf.setTextColor(255, 255, 255);
             pdf.setFontSize(18);
             pdf.setFont("helvetica", "bold");
-            pdf.text("ESTADÍSTICAS DE DESEMPEÑO", 15, 18);
+            pdf.text("ESTADÍSTICAS DE DESEMPEÑO", 65, 18);
 
-            pdf.setFontSize(12);
+            pdf.setFontSize(11);
             pdf.setFont("helvetica", "normal");
-            pdf.text("Control Patrimonial", 15, 25);
+            pdf.text("Control Patrimonial", 65, 25);
 
+            // Título dinámico a la derecha
             pdf.setFontSize(14);
             pdf.setFont("helvetica", "bold");
             pdf.text(title.toUpperCase(), 282, 20, { align: "right" });
 
-            // Background White for Chart area
-            pdf.setFillColor(248, 250, 252); // Muted slate bg
-            pdf.roundedRect(10, 35, 277, 155, 3, 3, 'F');
-
-            // Add logo to PDF if exists
-            const logoImg = document.querySelector('.brand img');
-            if (logoImg) {
-                try {
-                    pdf.setFillColor(255, 255, 255);
-                    pdf.roundedRect(240, 5, 42, 12, 2, 2, 'F');
-                    pdf.addImage(logoImg, 'PNG', 242, 6, 38, 10);
-                } catch (e) { console.error("Logo error", e); }
-            }
+            // Background Area para la Gráfica - Reducida para dar espacio
+            pdf.setFillColor(248, 250, 252);
+            pdf.roundedRect(10, 38, 277, 148, 3, 3, 'F');
 
             const chartImg = canvas.toDataURL('image/png', 1.0);
-            pdf.addImage(chartImg, 'PNG', 15, 45, 267, 135);
+            pdf.addImage(chartImg, 'PNG', 25, 48, 247, 125);
 
-            // Footer
+            // Footer con más espacio para la firma
             const profile = getProfile();
             pdf.setFontSize(9);
-            pdf.setTextColor(148, 163, 184); // slate-400
-            pdf.text(`Servidor Público: ${profile.servidor || 'S/N'} | Área: ${profile.area || 'S/A'}`, 15, 202);
-            pdf.text(`Generado: ${new Date().toLocaleString()}`, 282, 202, { align: "right" });
+            pdf.setTextColor(148, 163, 184);
+            pdf.text(`Servidor Público: ${profile.servidor || 'S/N'} | Área: ${profile.area || 'S/A'}`, 15, 204);
+            pdf.text(`Generado: ${new Date().toLocaleString()}`, 282, 204, { align: "right" });
 
-            // Signature line
+            // Línea de firma
             pdf.setDrawColor(203, 213, 225);
-            pdf.line(110, 195, 187, 195);
+            pdf.line(110, 192, 187, 192);
             pdf.setTextColor(30, 41, 59);
             pdf.setFontSize(8);
-            pdf.text("FIRMA DE REVISIÓN", 148.5, 199, { align: "center" });
+            pdf.text("FIRMA DE REVISIÓN", 148.5, 197, { align: "center" });
 
             pdf.save(`${type}_stats_${formatDate(new Date())}.pdf`);
         }
