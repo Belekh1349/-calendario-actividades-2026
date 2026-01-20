@@ -32,6 +32,7 @@
             --primary: #8b1a2d;
             /* Color guinda/institucional */
             --primary-light: #ab2a3e;
+            --primary-dark: #6b1422;
             --secondary: #857248;
             /* Color dorado/ocre */
             --accent: #d4af37;
@@ -44,18 +45,36 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             --silver-gradient: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 50%, #94a3b8 100%);
+            --input-bg: rgba(15, 23, 42, 0.5);
+            --input-text: #ffffff;
         }
 
         /* Light Theme Variables */
         body.light-mode {
-            --bg-dark: #f1f5f9;
+            --bg-dark: #f8fafc;
             --bg-card: rgba(255, 255, 255, 0.9);
-            --text-main: #0f172a;
+            --text-main: #1e293b;
             --text-dim: #64748b;
-            --border: rgba(15, 23, 42, 0.1);
-            --glass: rgba(15, 23, 42, 0.03);
+            --border: rgba(30, 41, 59, 0.1);
+            --glass: rgba(16, 185, 129, 0.05);
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             --silver-gradient: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            --input-bg: #ffffff;
+            --input-text: #1e293b;
+        }
+
+        /* Sepia Theme Variables */
+        body.sepia-mode {
+            --bg-dark: #f4ecd8;
+            --bg-card: rgba(253, 246, 227, 0.9);
+            --text-main: #5b4636;
+            --text-dim: #8b735b;
+            --border: rgba(91, 70, 54, 0.1);
+            --glass: rgba(139, 26, 45, 0.05);
+            --shadow: 0 10px 30px rgba(91, 70, 54, 0.05);
+            --silver-gradient: linear-gradient(135deg, #5b4636 0%, #8b735b 100%);
+            --input-bg: #fdf6e3;
+            --input-text: #5b4636;
         }
 
         /* Admin Mode Restrictions */
@@ -115,7 +134,11 @@
         }
 
         body.light-mode {
-            background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
+            background: radial-gradient(circle at top right, #f1f5f9, #f8fafc);
+        }
+
+        body.sepia-mode {
+            background: radial-gradient(circle at top right, #fcf5e5, #f4ecd8);
         }
 
         h1,
@@ -295,11 +318,11 @@
         .input-field input,
         .input-field select,
         .input-field textarea {
-            background: rgba(15, 23, 42, 0.5);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 12px 16px;
-            color: #fff;
+            color: var(--input-text);
             outline: none;
             transition: var(--transition);
             font-family: 'Inter', sans-serif;
@@ -358,6 +381,7 @@
         .nav-arrow:hover {
             background: var(--primary);
             border-color: var(--primary);
+            color: #fff;
         }
 
         .calendar-grid {
@@ -1857,14 +1881,13 @@
                 }
             });
 
-            // Signature - Guinda según solicitud
+            // Signature - Negro según solicitud
             const finalY = doc.lastAutoTable.finalY + 30;
             if (finalY < 250) {
-                const colorGuinda = [139, 26, 45];
-                doc.setDrawColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
+                doc.setDrawColor(0);
                 doc.line(60, finalY, 150, finalY);
                 doc.setFontSize(10);
-                doc.setTextColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
+                doc.setTextColor(0);
                 doc.setFont("helvetica", "bold");
                 doc.text("Firma de Conformidad", 105, finalY + 7, { align: "center" });
             }
@@ -2030,28 +2053,40 @@
         }
 
         function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const icon = document.querySelector('.btn-outline i');
-            const isLight = document.body.classList.contains('light-mode');
+            const body = document.body;
+            const icon = document.querySelector('header .btn-outline i');
 
-            if (isLight) {
-                icon.className = 'fa-solid fa-sun';
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                body.classList.add('sepia-mode');
+                icon.className = 'fa-solid fa-leaf'; // Icono para sepia
+                localStorage.setItem('theme_preference', 'sepia');
+            } else if (body.classList.contains('sepia-mode')) {
+                body.classList.remove('sepia-mode');
+                icon.className = 'fa-solid fa-moon'; // Icono para dark
+                localStorage.setItem('theme_preference', 'dark');
             } else {
-                icon.className = 'fa-solid fa-moon';
+                body.classList.add('light-mode');
+                icon.className = 'fa-solid fa-sun'; // Icono para light
+                localStorage.setItem('theme_preference', 'light');
             }
-
-            // Persistir preferencia
-            localStorage.setItem('theme_preference', isLight ? 'light' : 'dark');
         }
 
         // Cargar tema al inicio
-        if (localStorage.getItem('theme_preference') === 'light') {
-            document.body.classList.add('light-mode');
-            setTimeout(() => {
-                const icon = document.querySelector('.btn-outline i');
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme_preference');
+            const icon = document.querySelector('header .btn-outline i');
+
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
                 if (icon) icon.className = 'fa-solid fa-sun';
-            }, 100);
-        }
+            } else if (savedTheme === 'sepia') {
+                document.body.classList.add('sepia-mode');
+                if (icon) icon.className = 'fa-solid fa-leaf';
+            } else {
+                if (icon) icon.className = 'fa-solid fa-moon';
+            }
+        });
 
         // Admin Mode Logic
         let isAdmin = false;
