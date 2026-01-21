@@ -1213,15 +1213,10 @@
                         <input type="text" id="areaAdscripcion" placeholder="Área de adscripción"
                             onchange="saveProfile()">
                     </div>
-                    <div class="input-field">
-                        <label for="geminiKey"><i class="fa-solid fa-key"></i> Google Gemini API Key</label>
-                        <input type="password" id="geminiKey" placeholder="Pega tu API Key..." onchange="saveProfile()">
-                    </div>
-                    <div class="input-field">
-                        <label for="sheetsUrl"><i class="fa-solid fa-database"></i> URL Google Sheets (Apps
-                            Script)</label>
-                        <input type="password" id="sheetsUrl" placeholder="https://script.google.com/macros/s/..."
-                            onchange="saveProfile()">
+                    <div class="input-field" style="justify-content: flex-end;">
+                        <button class="btn btn-outline" onclick="openCloudModal()" style="height: 48px;">
+                            <i class="fa-solid fa-gears"></i> Configuración de Conexión
+                        </button>
                     </div>
                 </section>
 
@@ -1495,6 +1490,36 @@
         </div>
     </div>
 
+    <div class="modal" id="cloudConfigModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 1.5rem; color: var(--primary);"><i class="fa-solid fa-cloud"></i> Configuración de
+                    Nube</h2>
+                <button class="btn btn-outline" style="padding: 8px;" onclick="closeCloudModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="input-field" style="margin-bottom: 20px;">
+                <label for="geminiKey"><i class="fa-solid fa-key"></i> Google Gemini API Key</label>
+                <input type="password" id="geminiKey" placeholder="Pega tu API Key..." onchange="saveProfile()">
+                <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">Para el asistente de IA y
+                    resúmenes automáticos.</p>
+            </div>
+            <div class="input-field" style="margin-bottom: 20px;">
+                <label for="sheetsUrl"><i class="fa-solid fa-database"></i> URL Google Sheets (Apps Script)</label>
+                <input type="password" id="sheetsUrl" placeholder="https://script.google.com/macros/s/..."
+                    onchange="saveProfile()">
+                <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">Para sincronizar registros entre
+                    dispositivos.</p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="closeCloudModal()" style="width: 100%;">
+                    <i class="fa-solid fa-check"></i> Guardar y Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Data & State
         let currentYear = 2026;
@@ -1696,6 +1721,8 @@
                             <option value="Vehículo" ${data.reqs === 'Vehículo' ? 'selected' : ''}>Vehículo</option>
                             <option value="Papelería" ${data.reqs === 'Papelería' ? 'selected' : ''}>Papelería</option>
                             <option value="Apoyo de Personal" ${data.reqs === 'Apoyo de Personal' ? 'selected' : ''}>Apoyo de Personal</option>
+                            <option value="Dispositivos Electrónicos" ${data.reqs === 'Dispositivos Electrónicos' ? 'selected' : ''}>Dispositivos Electrónicos</option>
+                            <option value="Trámite en Linea" ${data.reqs === 'Trámite en Linea' ? 'selected' : ''}>Trámite en Linea</option>
                             <option value="Papelería y Apoyo de Personal" ${data.reqs === 'Papelería y Apoyo de Personal' ? 'selected' : ''}>Papelería y Apoyo de Personal</option>
                             <option value="Vehículo y Apoyo de Personal" ${data.reqs === 'Vehículo y Apoyo de Personal' ? 'selected' : ''}>Vehículo y Apoyo de Personal</option>
                             <option value="Recurso Económico" ${data.reqs === 'Recurso Económico' ? 'selected' : ''}>Recurso Económico</option>
@@ -2192,6 +2219,14 @@
         function closePdfModal() {
             document.getElementById('pdfModal').classList.remove('active');
             document.getElementById('pdfFrame').src = '';
+        }
+
+        function openCloudModal() {
+            document.getElementById('cloudConfigModal').classList.add('active');
+        }
+
+        function closeCloudModal() {
+            document.getElementById('cloudConfigModal').classList.remove('active');
         }
 
         // Utils
