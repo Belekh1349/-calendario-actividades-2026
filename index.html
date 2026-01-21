@@ -2072,13 +2072,13 @@
 
                 console.log("Iniciando sincronización...", localData);
 
-                // Intentamos una petición más estándar. 
-                // Nota: Google Apps Script siempre dará error de CORS en POST aunque la petición llegue.
-                // Usamos 'no-cors' para evitar que falle el flujo, pero aseguramos el envío.
+                // Forzamos el envío como texto plano pero con estructura JSON clara
+                // Algunos navegadores bloquean el envío si detectan JSON complejo en no-cors
                 const response = await fetch(sheetsUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(localData)
                 });
 
