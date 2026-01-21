@@ -1,6 +1,6 @@
-// 1. Crea un nuevo Google Sheet.
+// 1. Abre tu Google Sheet de destino.
 // 2. Ve a 'Extensiones' > 'Apps Script'.
-// 3. Borra todo el código y pega este:
+// 3. Borra todo el código anterior y pega este código con SISTEMA DE LOGS:
 
 function doGet(e) {
     var sheet = getDatabaseSheet();
@@ -10,14 +10,17 @@ function doGet(e) {
         profile: {}
     };
 
-    // Procesar registros
     for (var i = 1; i < data.length; i++) {
-        var type = data[i][0]; // 'RECORD' o 'PROFILE'
-        var key = data[i][1];  // Fecha o campo del perfil
-        var value = data[i][2]; // JSON string
+        var type = data[i][0];
+        var key = data[i][1];
+        var value = data[i][2];
 
         if (type === 'RECORD') {
-            result.records[key] = JSON.parse(value);
+            try {
+                result.records[key] = JSON.parse(value);
+            } catch (e) {
+                result.records[key] = value;
+            }
         } else if (type === 'PROFILE') {
             result.profile[key] = value;
         }
@@ -28,38 +31,56 @@ function doGet(e) {
 }
 
 function doPost(e) {
+    var logSheet = getLogSheet();
+    logSheet.appendRow([new Date(), "Petición recibida", "Procesando..."]);
+
+    var contents = e.postData ? e.postData.contents : null;
     var content;
+
     try {
-        content = JSON.parse(e.postData.contents);
+        content = JSON.parse(contents);
     } catch (err) {
-        // Fallback for different content types
+        // Si no es JSON puro, intentamos leer de los parámetros
         content = e.parameter;
+        logSheet.appendRow([new Date(), "Aviso", "Datos recibidos por parámetros o error en JSON"]);
     }
 
     var sheet = getDatabaseSheet();
 
-    if (content && content.action === 'SYNC_ALL') {
-        sheet.clear();
-        sheet.appendRow(['TYPE', 'KEY', 'VALUE', 'TIMESTAMP']);
+    if (content && (content.action === 'SYNC_ALL' || content['action'] === 'SYNC_ALL')) {
+        logSheet.appendRow([new Date(), "Acción", "SYNC_ALL detectado"]);
 
-        // Guardar Perfil
-        if (content.profile) {
-            for (var k in content.profile) {
-                if (k !== 'sheetsUrl') { // Don't store the URL itself
-                    sheet.appendRow(['PROFILE', k, content.profile[k], new Date()]);
+        sheet.clear();
+        var rows = [['TYPE', 'KEY', 'VALUE', 'TIMESTAMP']];
+        var now = new Date();
+
+        // Procesar profile
+        var profile = content.profile || (content['profile'] ? JSON.parse(content['profile']) : null);
+        if (profile) {
+            for (var k in profile) {
+                if (k !== 'sheetsUrl') {
+                    rows.push(['PROFILE', k, profile[k], now]);
                 }
             }
         }
 
-        // Guardar Registros
-        if (content.records) {
-            for (var date in content.records) {
-                sheet.appendRow(['RECORD', date, JSON.stringify(content.records[date]), new Date()]);
+        // Procesar records
+        var records = content.records || (content['records'] ? JSON.parse(content['records']) : null);
+        if (records) {
+            for (var date in records) {
+                rows.push(['RECORD', date, JSON.stringify(records[date]), now]);
             }
+            logSheet.appendRow([new Date(), "Éxito", "Registros guardados: " + Object.keys(records).length]);
         }
 
-        return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
+        if (rows.length > 1) {
+            sheet.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+        }
+
+        return ContentService.createTextOutput(JSON.stringify({ status: 'ok', count: rows.length - 1 }))
             .setMimeType(ContentService.MimeType.JSON);
+    } else {
+        logSheet.appendRow([new Date(), "Error", "No se detectó la acción SYNC_ALL o el contenido está vacío"]);
     }
 }
 
@@ -73,8 +94,20 @@ function getDatabaseSheet() {
     return sheet;
 }
 
-// 4. Haz clic en 'Implementar' > 'Nueva implementación'.
-// 5. Tipo: 'Aplicación web'.
-// 6. Ejecutar como: 'Yo' (tu cuenta).
-// 7. Quién tiene acceso: 'Cualquiera'.
-// 8. Copia la 'URL de la aplicación web' y pégala en AdminFlow.
+function getLogSheet() {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Logs');
+    if (!sheet) {
+        sheet = ss.insertSheet('Logs');
+        sheet.appendRow(['Fecha', 'Evento', 'Detalle']);
+    }
+    return sheet;
+}
+
+// PASOS CRÍTICOS PARA LA IMPLEMENTACIÓN:
+// 1. Haz clic en 'Implementar' > 'Gestionar implementaciones'.
+// 2. Haz clic en el ícono del LÁPIZ para editar.
+// 3. En la lista de 'Versión', selecciona 'NUEVA VERSIÓN'.
+// 4. Haz clic en 'Implementar'.
+// 5. Copia la URL que termina en /exec.
+// 6. Ve a tu App de Actividades > Admin Mode > Pega la URL > Botón Sincronizar.
