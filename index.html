@@ -156,6 +156,14 @@
             opacity: 0.8;
         }
 
+        body.visitor-mode .report-section input,
+        body.visitor-mode .report-section select,
+        body.visitor-mode .stats-filter input,
+        body.visitor-mode .stats-filter select {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+        }
+
         .admin-badge {
             display: inline-flex;
             align-items: center;
@@ -1825,41 +1833,31 @@
             const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAAHLklEQVRogd2Ze2xT5x3Hn8/x9TnxEyd2YicXEjAJIUBCAy0l5VHotpYuK6t0a1el3aZt0qrdgHba/jFp06ZJ+8O0atO0ax/t2q5bC+1o166jgJYWKA+FhEAS48Qv7NiJ7fN4fH77wzHExI5tDKX9JM9/j5/z+31/z/f5Pe/zOQo+5KEM/7+A6aKr6+jF4+3t/b1dXV1+oAMIAgIgA4PAEHC8p6fnxK1+7pYF6O4+siYQ6H7T5/O/3tTU5K+qqkIIgRACIQSUUiSTSRKJxLWhoaF/DA0N/bm3t/fHsVjshVv5/C0J0N195Gqg+62GhoY/rFy50r1s2TIcDocNREqJYRjIsoxhGIyOji48f/78O52dnS/FYrEXbyWMWxCgu/vIWqD77UAg8JbX662w2WwIIZBlGcd0KKWw2+243W5qamo8lZWV/pUrV/p7e3vf7OzsfP5mI7glAXp7e3/X1NT0t6qqKrfD4cAwDCRJwjRNFEVB0zQkSbI9L4RAURSys7MZHh5mYmKCmpoab01NzfKamprlnZ2dz99sBLckwM9+9rNfNDQ0/M7v9y9TVRXDMJBlGVVVkWWZTCaDoijIskw6nbbtgRACm81GNBplbGxstq2tra25vb393ZsJ4ZYEeP7553/V1NT0e1VVlctutyOEQJIkVFXFNE0Mw0BRFCRJwjAMFEWxPS+EQJIk0uk0o6Oji9ra2vy1tbUru7q6/ngzIdySAD/72c9+0dDQ8Du/379MVVUMw0CWZVRVRZZlMpkMiqIgyzLpdNq2B0IIbDYZwzAQQsBut9Pc3Fy1atWqP/T09Py6r6/v1Fw/d0sC9Pb2/q6pqelvVVVVboej0APTNFEUBcMwUBQFwsC8M8M0LRVFwzTAMFEVBkowkSshkSshmMsiyjCzLpNNp294LIdB1HaXUuREURUEp9Y4f/3Z8VvP/AHG9YwYJsk7kAAAAAElFTkSuQmCC";
 
             const drawHeader = (viewType, range) => {
-                // Background Header
-                doc.setFillColor(30, 41, 59);
+                const colorGuinda = [139, 26, 45];
+                // Background Header - Guinda institucional
+                doc.setFillColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
                 doc.rect(0, 0, 210, 50, 'F');
 
-                // Títulos en la esquina IZQUIERDA
-                const colorGuinda = [139, 26, 45];
+                // Títulos e información
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(18);
-                doc.setTextColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
-                // Dibujamos un pequeño resalte blanco tras el texto guinda para legibilidad sobre el fondo oscuro
-                // O mejor, ya que el fondo es oscuro, usemos blanco para el título principal pero guinda para el acento
-                // El usuario pidió "Cambia el color negro por un guinda", asumo que se refiere a los títulos y firmas.
-                // Como el fondo del header es azul oscuro (30,41,59), el guinda oscuro no se verá bien.
-                // Ajustaré el diseño para que el guinda resalte (quizás con un fondo más claro en esa parte o texto blanco y detalles guinda).
-                // "Cambia el color negro por un guinda" -> Esto aplica más a la firma y etiquetas fuera del header.
-                // Dentro del header oscuro, mantendré el blanco para legibilidad pero usaré el guinda en el decorador.
-
                 doc.setTextColor(255, 255, 255);
                 doc.text("REPORTE DE ACTIVIDADES", 14, 22);
 
                 doc.setFontSize(11);
                 doc.setFont("helvetica", "normal");
-                doc.setTextColor(200, 200, 200);
+                doc.setTextColor(235, 235, 235);
                 doc.text("Adquisiciones y Control Patrimonial", 14, 29);
 
-                doc.setFillColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
-                doc.rect(14, 32, 100, 1, "F"); // Línea guinda más gruesa
+                // Línea decorativa
+                doc.setFillColor(255, 255, 255);
+                doc.rect(14, 32, 60, 0.5, "F");
 
-                // Logo Derecho (con fondo blanco)
+                // Logo institutional (sin fondo blanco, posicionado a la derecha)
                 const logoImg = document.querySelector('.brand img');
                 if (logoImg) {
                     try {
-                        doc.setFillColor(255, 255, 255);
-                        doc.roundedRect(151, 8, 45, 15, 2, 2, 'F');
-                        doc.addImage(logoImg, 'PNG', 153, 10, 41, 11);
+                        doc.addImage(logoImg, 'PNG', 160, 10, 38, 10);
                     } catch (e) {
                         console.warn("Logo error:", e);
                     }
@@ -1989,15 +1987,18 @@
                 }
             });
 
-            // Signature - Negro según solicitud
+            // Signature - Guinda según solicitud institutional
             const finalY = doc.lastAutoTable.finalY + 30;
-            if (finalY < 250) {
-                doc.setDrawColor(0);
-                doc.line(60, finalY, 150, finalY);
-                doc.setFontSize(10);
-                doc.setTextColor(0);
+            const colorGuinda = [139, 26, 45];
+
+            if (finalY < 275) {
+                doc.setDrawColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
+                doc.setLineWidth(0.5);
+                doc.line(65, finalY, 145, finalY);
+                doc.setFontSize(9);
+                doc.setTextColor(colorGuinda[0], colorGuinda[1], colorGuinda[2]);
                 doc.setFont("helvetica", "bold");
-                doc.text("Firma de Conformidad", 105, finalY + 7, { align: "center" });
+                doc.text("FIRMA DE REVISIÓN Y CONFORMIDAD", 105, finalY + 6, { align: "center" });
             }
 
             // Vista Previa en lugar de Descarga directa
