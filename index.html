@@ -2294,6 +2294,14 @@
             const profile = getProfile();
             const sheetsUrl = profile.sheetsUrl;
 
+            // --- SEGURO DE SEGURIDAD ---
+            const currentRecords = getRecords();
+            if (Object.keys(currentRecords).length === 0) {
+                alert("⚠️ ¡SEGURIDAD! No hay registros en este dispositivo.\n\nSincronizar ahora borraría tus datos de la nube. Si quieres recuperar tus datos previos, usa el botón 'Descargar de Nube' en su lugar.");
+                return;
+            }
+            // ---------------------------
+
             if (!sheetsUrl || !sheetsUrl.includes('/exec')) {
                 alert("Por favor, configura una URL válida de Google Sheets (debe terminar en /exec).");
                 return;
